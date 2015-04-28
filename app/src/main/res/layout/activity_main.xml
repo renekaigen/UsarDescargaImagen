@@ -18,11 +18,21 @@
         android:layout_gravity="center"
         android:id="@+id/save"
         android:text="Save Image" />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:id="@+id/etImagen"
+        android:text="name_image"
+        />
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:id="@+id/img"/>
+
+
 
 </LinearLayout>

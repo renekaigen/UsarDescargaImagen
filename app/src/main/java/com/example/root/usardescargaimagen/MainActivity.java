@@ -11,8 +11,10 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -28,7 +30,8 @@ public class MainActivity extends Activity {
     ImageView img;
     Bitmap bitmap;
     ProgressDialog pDialog;
-    String image = "naruhina.jpg";
+    String image = "naruhina";
+    EditText etImagen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +40,14 @@ public class MainActivity extends Activity {
         load_img = (Button)findViewById(R.id.load);
         save_img = (Button)findViewById(R.id.save);
         img = (ImageView)findViewById(R.id.img);
+        etImagen=(EditText) findViewById(R.id.etImagen);
+
         load_img.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
                 // TODO Auto-generated method stub
-                new LoadImage().execute("https://mmi229.whatsapp.net/d/3C7dEQzYP2WmzM4U-XAUS1U-bXo/AqQsXevYj4L5JBY2ZOc6sx1Lz5NqsWW7lMaLqHAziY6u.jpg");
+                new LoadImage().execute("https://raw.githubusercontent.com/renekaigen/UsarDescargaImagen/master/naruhina.jpg");
             }
         });
 
@@ -51,20 +56,25 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View arg0) {
                 // TODO Auto-generated method stub
-                guardar_imagen();
+                String nombre_imagen = etImagen.getText().toString();
+                if (nombre_imagen == null || nombre_imagen.equals("")) {
+                    nombre_imagen=image;
                 }
+                Log.d("imagen", "" + nombre_imagen);
+                guardar_imagen(nombre_imagen + ".jpg");
+            }
         });
 
 
     }
 
-    public void guardar_imagen() {
+    public void guardar_imagen(String nombre_imagen) {
         if (bitmap != null) {
             File sdCard = Environment.getExternalStorageDirectory();
             File path = new File(sdCard.getAbsolutePath() + "/myImages");
             if (!path.exists())
                 path.mkdirs();
-            File file = new File(path, image);
+            File file = new File(path,nombre_imagen);
             FileOutputStream fOut;
             try {
                 fOut = new FileOutputStream(file);
