@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,12 +28,14 @@ import java.io.InputStream;
 import java.net.URL;
 
 public class MainActivity extends Activity {
-    Button load_img,save_img;
+    Button load_img,save_img,send_img;
     ImageView img;
     Bitmap bitmap;
     ProgressDialog pDialog;
+
     String image = "naruhina";
     EditText etImagen;
+    private ConectorSoap conexionsoap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +43,12 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         load_img = (Button)findViewById(R.id.load);
         save_img = (Button)findViewById(R.id.save);
+        send_img=(Button)findViewById(R.id.send);
         img = (ImageView)findViewById(R.id.img);
         etImagen=(EditText) findViewById(R.id.etImagen);
+
+
+
 
         load_img.setOnClickListener(new View.OnClickListener() {
 
@@ -50,6 +58,8 @@ public class MainActivity extends Activity {
                 new LoadImage().execute("https://raw.githubusercontent.com/renekaigen/UsarDescargaImagen/master/naruhina.jpg");
             }
         });
+
+
 
         save_img.setOnClickListener(new View.OnClickListener() {
 
@@ -64,6 +74,22 @@ public class MainActivity extends Activity {
                 guardar_imagen(nombre_imagen + ".jpg");
             }
         });
+
+        send_img.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                String nombre_imagen = etImagen.getText().toString();
+                if (nombre_imagen == null || nombre_imagen.equals("")) {
+                    nombre_imagen=image;
+                }
+                Log.d("imagen", "" + nombre_imagen);
+                String imagen_codificada=encondeBase64(nombre_imagen + ".jpg");
+                Log.d("imagen", " codificada " + imagen_codificada);
+                new UploadImage().execute(imagen_codificada);
+            }
+         });
 
 
     }
@@ -126,4 +152,37 @@ public class MainActivity extends Activity {
         }
     }
 
+
+    private class UploadImage extends AsyncTask<String, String, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(MainActivity.this);
+            pDialog.setMessage("Uploading Image ....");
+            pDialog.show();
+
+        }
+        protected String doInBackground(String... args) {
+            Log.d("ASYNC", "imagen es "+args[0]);
+            conexionsoap=new ConectorSoap();
+            String respuestaSoap = conexionsoap.conectar(args[0], MainActivity.this);
+            return respuestaSoap;
+        }
+
+        protected void onPostExecute(String respuestaSoap) {
+            pDialog.dismiss();
+            Toast.makeText(MainActivity.this, "" + respuestaSoap, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    public String encondeBase64(String nombreImagen){
+        File sdCard = Environment.getExternalStorageDirectory();
+        Bitmap myBitmap = BitmapFactory.decodeFile(sdCard.getAbsolutePath() + "/myImages/"+nombreImagen);//imgFile.getAbsolutePath());
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        myBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream .toByteArray();
+        String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+        return encoded;
+    }
 }
