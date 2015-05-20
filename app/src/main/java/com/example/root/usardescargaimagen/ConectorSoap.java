@@ -23,10 +23,12 @@ import java.net.SocketTimeoutException;
 public class ConectorSoap {
 
 
-    private static String NAMESPACE="http://localhost/decodeImagen/ws/nusoap/";
-    private static String URL="http://localhost/decodeImagen/ws/index.php";
-    private static String soap_action="http://localhost/decodeImagen/ws/index.php/SubirImagen";//agregar soap action conforme peticion
+    private static String NAMESPACE="http://192.168.1.61/decodeImagen/ws/nusoap/";
+    private static String URL="http://192.168.1.61/decodeImagen/ws/index.php";
+    private static String soap_action="http://192.168.1.61/decodeImagen/ws/index.php/SubirImagen";//agregar soap action conforme peticion
     private static String method_name="SubirImagen";
+    private static String method_name1="SubirImagenNoWrap";
+    private static String method_name2="getBaseImageWeb";
 
 
     public ConectorSoap() {
@@ -58,10 +60,20 @@ public class ConectorSoap {
      @parama contexto
      **/
 
-    public String conectar(String imagenBase64, Context contexto)
+    public String conectar(String imagenBase64, Context contexto,int tipo)
     {
+
+        String metodo="";
+        if(tipo==2){
+            metodo=this.method_name2;
+        }
+        else
+        {
+            metodo=this.method_name1;
+        }
+
         String resultado="0";
-        SoapObject request = new SoapObject(NAMESPACE, this.method_name);
+        SoapObject request = new SoapObject(NAMESPACE, metodo);
         request.addProperty("cadena", imagenBase64);
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         envelope.setOutputSoapObject(request);

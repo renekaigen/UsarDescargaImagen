@@ -28,7 +28,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 public class MainActivity extends Activity {
-    Button load_img,save_img,send_img;
+    Button load_img,load_base,save_img,send_img,decode_img;
     ImageView img;
     Bitmap bitmap;
     ProgressDialog pDialog;
@@ -42,12 +42,12 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         load_img = (Button)findViewById(R.id.load);
+        load_base = (Button)findViewById(R.id.loadbase);
         save_img = (Button)findViewById(R.id.save);
         send_img=(Button)findViewById(R.id.send);
+        decode_img = (Button)findViewById(R.id.decode);
         img = (ImageView)findViewById(R.id.img);
         etImagen=(EditText) findViewById(R.id.etImagen);
-
-
 
 
         load_img.setOnClickListener(new View.OnClickListener() {
@@ -56,6 +56,30 @@ public class MainActivity extends Activity {
             public void onClick(View arg0) {
                 // TODO Auto-generated method stub
                 new LoadImage().execute("https://raw.githubusercontent.com/renekaigen/UsarDescargaImagen/master/naruhina.jpg");
+            }
+        });
+
+        load_base.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                new LoadImagenBase().execute();
+            }
+        });
+
+        decode_img.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                String nombre_imagen = etImagen.getText().toString();
+                if (nombre_imagen == null || nombre_imagen.equals("")) {
+                    nombre_imagen=image;
+                }
+                Log.d("imagen", "" + nombre_imagen);
+                String imagen_codificada=encondeBase64(nombre_imagen + ".jpg");
+                decodeBase64(imagen_codificada);
             }
         });
 
@@ -165,13 +189,36 @@ public class MainActivity extends Activity {
         protected String doInBackground(String... args) {
             Log.d("ASYNC", "imagen es "+args[0]);
             conexionsoap=new ConectorSoap();
-            String respuestaSoap = conexionsoap.conectar(args[0], MainActivity.this);
+            String respuestaSoap = conexionsoap.conectar(args[0], MainActivity.this,1);
             return respuestaSoap;
         }
 
         protected void onPostExecute(String respuestaSoap) {
             pDialog.dismiss();
             Toast.makeText(MainActivity.this, "" + respuestaSoap, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private class  LoadImagenBase extends AsyncTask<String, String, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(MainActivity.this);
+            pDialog.setMessage("Uploading Image ....");
+            pDialog.show();
+
+        }
+        protected String doInBackground(String... args) {
+
+            conexionsoap=new ConectorSoap();
+            String respuestaSoap = conexionsoap.conectar("", MainActivity.this,2);
+            return respuestaSoap;
+        }
+
+        protected void onPostExecute(String respuestaSoap) {
+            pDialog.dismiss();
+            decodeBase64(respuestaSoap);
+           // Toast.makeText(MainActivity.this, "" + respuestaSoap, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -182,7 +229,15 @@ public class MainActivity extends Activity {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         myBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
         byte[] byteArray = byteArrayOutputStream .toByteArray();
-        String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+        String encoded = Base64.encodeToString(byteArray, Base64.NO_WRAP);//Base64.DEFAULT);
         return encoded;
+    }
+
+    public void decodeBase64(String encodeImage){
+        byte[] imageAsBytes = Base64.decode(encodeImage.getBytes(), Base64.DEFAULT);
+        ImageView image = (ImageView)this.findViewById(R.id.img2);
+        image.setImageBitmap(
+                BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length)
+        );
     }
 }
